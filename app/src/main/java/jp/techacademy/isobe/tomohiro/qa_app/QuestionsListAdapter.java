@@ -37,23 +37,23 @@ public class QuestionsListAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int positon, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, ViewGroup parent) {
 
         if (convertView == null) {
             convertView = mLayoutInflater.inflate(R.layout.list_questions, parent, false);
         }
 
         TextView titleText = (TextView) convertView.findViewById(R.id.titleTextView);
-        titleText.setText(mQuestionArrayList.get(positon).getTitle());
+        titleText.setText(mQuestionArrayList.get(position).getTitle());
 
         TextView nameText = (TextView) convertView.findViewById(R.id.nameTextView);
-        nameText.setText(mQuestionArrayList.get(positon).getName());
+        nameText.setText(mQuestionArrayList.get(position).getName());
 
         TextView resText = (TextView) convertView.findViewById(R.id.resTextView);
-        int resNum = mQuestionArrayList.get(positon).getAnswers().size();
+        int resNum = mQuestionArrayList.get(position).getAnswers().size();
         resText.setText(String.valueOf(resNum));
 
-        byte[] bytes = mQuestionArrayList.get(positon).getImageBytes();
+        byte[] bytes = mQuestionArrayList.get(position).getImageBytes();
 
         if (bytes.length != 0) {
             Bitmap image = BitmapFactory.decodeByteArray(bytes, 0, bytes.length).copy(Bitmap.Config.ARGB_8888, true);

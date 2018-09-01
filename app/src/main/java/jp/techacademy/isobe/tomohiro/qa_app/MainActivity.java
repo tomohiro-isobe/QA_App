@@ -41,9 +41,11 @@ public class MainActivity extends AppCompatActivity
     private ArrayList<Question> mQuestionArrayList;
     private QuestionsListAdapter mAdapter;
 
+
     private ChildEventListener mEventListener = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
             HashMap map = (HashMap) dataSnapshot.getValue();
             String title = (String) map.get("title");
             String body = (String) map.get("body");
@@ -160,6 +162,15 @@ public class MainActivity extends AppCompatActivity
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+
+        // ログインしていなければ「お気に入り」を非表示にする
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if ( user == null) {
+            Menu menu = navigationView.getMenu();
+            MenuItem favoriteItem = menu.findItem(R.id.nav_fav);
+            favoriteItem.setVisible(false);
+        }
+
         navigationView.setNavigationItemSelectedListener(this);
 
         // Firebase追加
@@ -187,10 +198,22 @@ public class MainActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
 
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         // 1:趣味を既定の選択とする
         if(mGenre == 0) {
-            NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+
             onNavigationItemSelected(navigationView.getMenu().getItem(0));
+        }
+        // ログインしていなければ「お気に入り」を非表示にする
+        if (user == null) {
+            Menu menu = navigationView.getMenu();
+            MenuItem favoriteItem = menu.findItem(R.id.nav_fav);
+            favoriteItem.setVisible(false);
+        } else {
+            Menu menu = navigationView.getMenu();
+            MenuItem favoriteItem = menu.findItem(R.id.nav_fav);
+            favoriteItem.setVisible(true);
         }
     }
 
@@ -232,6 +255,14 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_compter) {
             mToolbar.setTitle("コンピューター");
             mGenre = 4;
+        } else if (id == R.id.nav_fav) {
+            mToolbar.setTitle("お気に入り");
+            // お気に入りをタップするとお気に入り一覧画面へ遷移させる
+            Intent intent = new Intent(getApplicationContext(), FavoriteActivity.class);
+
+            startActivity(intent);
+            // ここでリターンを忘れるとMainActivityが起動されてから遷移してしまうので注意
+            return true;
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -240,15 +271,20 @@ public class MainActivity extends AppCompatActivity
         // 質問のリストをクリアしてから再度Adapterにセットし、AdapterをListViewにセットし直す
         mQuestionArrayList.clear();
         mAdapter.setQuestionArrayList(mQuestionArrayList);
+
         mListView.setAdapter(mAdapter);
 
         // 選択したジャンルにリスナーを登録する
         if (mGenreRef != null) {
             mGenreRef.removeEventListener(mEventListener);
         }
-        mGenreRef = mDatabaseReference.child(Const.ContentsPATH).child(String.valueOf(mGenre));
-        mGenreRef.addChildEventListener(mEventListener);
 
-        return true;
+
+
+            mGenreRef = mDatabaseReference.child(Const.ContentsPATH).child(String.valueOf(mGenre));
+            mGenreRef.addChildEventListener(mEventListener);
+
+
+            return true;
     }
 }
